@@ -1,10 +1,10 @@
 class Listing
-  attr_reader :name, :city
+  attr_reader :city
 
   @@all = []
 
-  def initialize(name, city)
-    @name=name
+  def initialize(city)
+    # @name=name
     @city=city
     @@all << self
   end
@@ -19,26 +19,31 @@ class Listing
 
   def guests
     self.trips.map{|trip|trip.guests}
+  end
+
+  def trip_count
+    self.trips.count
+  end
+
 
   def self.find_all_by_city(city)
     self.all.select{|listing|listing.city==self}
   end
 
-  def most_popular
+  def self.most_popular
     list_hash ={}
-    Trip.each do |trip|
-      list_hash[trips.listing] || 0
-      list_hash[trips.listing] += 1
+    Trip.all.each do |trip|
+      if list_hash[trip.listing] == nil
+        list_hash[trip.listing] = 1
+      else
+        list_hash[trip.listing] += 1
+      end
     end
-    print "#{listing_hash.values.max}"
-    listing_hash.key(listing_hash.values.max)
+    print "#{list_hash.values.max}"
+    list_hash.key(list_hash.values.max)
   end
-  
-
-
-
-
 end
+
 
 
 
@@ -57,6 +62,33 @@ class Guest
     @@all
   end
 
+  def listings
+    self.trip.maps {|trip|trip.listings}
+  end
+
+  def trips
+    self.trip.map{|trip|trip.guest==self}.map
+  end
+
+  def trip_count
+    self.trips.count
+  end
+
+  def self.pro_traveller
+    guest_trav_hash = {}
+    Trip.all.each do |trip|
+      guest_trav_hash[trip.guest]||0
+      guest_trav_hash[trip.guest]+=1
+    end
+    guest_trav_hash.select do |guest, num_trips|
+      num_trips >1
+    end.keys
+  end
+
+  def self.find_all_by_name(name)
+    self.all.guest {|guest|guest.name == name}
+  end
+
 
 end
 
@@ -68,10 +100,9 @@ class Trip
 
   @@all = []
 
-  def initialize(listing, guest)
+  def initialize(guest, listing)
+    @guest=guest
     @listing=listing
-    @guests=guests
-
     @@all << self
   end
 
